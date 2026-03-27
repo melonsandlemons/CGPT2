@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lemons & Melons Dashboard</title>
+
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+<style>
+body { font-family: Arial; margin:0; background:#111; color:#fff; }
+.nav { display:flex; overflow-x:auto; background:#222; }
+.nav button { flex:1; padding:12px; color:#fff; background:none; border:none; }
+.tab { display:none; padding:20px; }
+.active { display:block; }
+.card { background:#1c1c1c; padding:15px; margin-bottom:15px; border-radius:10px; }
+button { padding:10px; margin-top:10px; width:100%; }
+.big { font-size:20px; font-weight:bold; }
+textarea { width:100%; height:120px; margin-top:10px; }
+</style>
+</head>
+
+<body>
+
+<div class="nav">
+<button data-tab="overview">Overview</button>
+<button data-tab="execution">Execution</button>
+<button data-tab="generator">Generator</button>
+<button data-tab="products">Products</button>
+</div>
+
+<div id="overview" class="tab active">
+<h2>📊 Overview</h2>
+<div class="card">
+<p id="totalRevenue">Total: $0</p>
+<p id="pace"></p>
+</div>
+</div>
+
+<div id="execution" class="tab">
+<h2>⚡ Daily Execution</h2>
+<div class="card">
+<label><input type="checkbox" data-task="post"> Post Content</label><br>
+<label><input type="checkbox" data-task="product"> Create Product</label><br>
+<label><input type="checkbox" data-task="research"> Research Trend</label>
+</div>
+<div class="card">
+<p class="big" id="score">0/100</p>
+</div>
+</div>
+
+<div id="generator" class="tab">
+<h2>🚀 Product + Content Generator</h2>
+
+<div class="card">
+<h3>🛍 Product Idea</h3>
+<button id="genProduct">Generate Product</button>
+<textarea id="productOutput"></textarea>
+<button id="saveProduct">Save Product</button>
+</div>
+
+<div class="card">
+<h3>📱 Content Idea</h3>
+<button id="genContent">Generate Content</button>
+<textarea id="contentOutput"></textarea>
+</div>
+
+</div>
+
+<div id="products" class="tab">
+<h2>🛍 Saved Products</h2>
+<div id="productList"></div>
+</div>
+
+<script>
+var firebaseConfig={
+apiKey:"AIzaSyDtCXIC22oAXUpEtJF7BSU5SwkXTCWMkfI",
+authDomain:"lemonsandmelons-5f74a.firebaseapp.com",
+databaseURL:"https://lemonsandmelons-5f74a-default-rtdb.firebaseio.com",
+projectId:"lemonsandmelons-5f74a"
+};
+
+var db=null;
+try{firebase.initializeApp(firebaseConfig);db=firebase.database();}catch(e){}
+
+function save(k,d){
+localStorage.setItem(k,JSON.stringify(d));
+if(db){db.ref(k).set(d);}
+}
+function get(k,def){
+var d=localStorage.getItem(k);
+return d?JSON.parse(d):def;
+}
+
+document.querySelector(".nav").onclick=function(e){
+var tab=e.target.getAttribute("data-tab");
+if(!tab)return;
+document.querySelectorAll(".tab").forEach(function(t){t.classList.remove("active");});
+document.getElementById(tab).classList.add("active");
+};
+
+var productIdeas=[
+"Funny Mom Life Mug | Gift for Moms | Chaos Coordinator",
+"Gym Motivation Shirt | No Days Off | Fitness Tee",
+"Dog Lover Tumbler | Cute Puppy Design | Pet Gift",
+"Minimalist Wall Art | Black & White Quote | Printable",
+"Boss Babe Tote Bag | Entrepreneur Gift"
+];
+
+var contentIdeas=[
+"Hook: 'Stop scrolling if you love your dog'\nShow product\nCTA: Link in bio",
+"Hook: 'This made me $100 on Etsy'\nShow process\nCTA: Try this idea",
+"Hook: 'POV: You're starting a business'\nRelatable clip\nCTA: Follow for ideas"
+];
+
+document.getElementById("genProduct").onclick=function(){
+var idea=productIdeas[Math.floor(Math.random()*productIdeas.length)];
+document.getElementById("productOutput").value=idea;
+};
+
+document.getElementById("genContent").onclick=function(){
+var idea=contentIdeas[Math.floor(Math.random()*contentIdeas.length)];
+document.getElementById("contentOutput").value=idea;
+};
+
+var products=get("products",[]);
+function renderProducts(){
+var list=document.getElementById("productList");
+list.innerHTML="";
+products.forEach(function(p){
+list.innerHTML+="<div class='card'>"+p+"</div>";
+});
+}
+
+document.getElementById("saveProduct").onclick=function(){
+var val=document.getElementById("productOutput").value;
+if(!val)return;
+products.push(val);
+save("products",products);
+renderProducts();
+};
+
+window.addEventListener("DOMContentLoaded",function(){
+renderProducts();
+});
+</script>
+
+</body>
+</html>
